@@ -32,6 +32,9 @@ export interface Function {
 
   /** 函数参数列表 */
   params: string[]
+
+  /** 是否为 main 函数 */
+  isMain: boolean
 }
 
 /**
@@ -46,27 +49,29 @@ export type ClientTemplate = (prefix: string, functions: Function[]) => string
  * @param functions 函数列表配置
  */
 export const clientTemplate: ClientTemplate = (prefix, functions) => {
-  const fns = functions.map(({ name, params }) => ({
+  const fns = functions.map(({ name, params, isMain }) => ({
     name,
     Name: upperFirst(name),
     cloudName: cloudName(prefix, name),
+    functionName: 'function' + upperFirst(name),
     paramsText: paramsLiteral(params),
-    objectText: objectLiteral(params),
+    dataText: isMain ? 'data' : `data: ${objectLiteral(params)}`,
+    isMain
   }))
   // prettier-ignore
   const text = source`
     ${dontEditText}
-    ${fns.map(({ name, Name }) => source`
-      import type function${Name} from '@cloud/functions/${name}'
+    ${fns.map(({ name, functionName, isMain }) => source`
+      import type ${isMain ? `{ main as ${functionName} }` : functionName} from '@cloud/functions/${name}'
     `)}
 
     type PromiseType<T> = T extends Promise<infer _> ? T : Promise<T>
 
     type PromiseReturnType<T extends (...args: any) => any> = (...args: Parameters<T>) => PromiseType<ReturnType<T>>
 
-    ${fns.map(({ Name, cloudName, paramsText, objectText }) => source`
-      export const cloud${Name}: PromiseReturnType<typeof function${Name}> = ${paramsText} => {
-        return wx.cloud.callFunction({ name: '${cloudName}', data: ${objectText} }).then(res => res.result as any)
+    ${fns.map(({ Name, cloudName, functionName, paramsText, dataText }) => source`
+      export const cloud${Name}: PromiseReturnType<typeof ${functionName}> = ${paramsText} => {
+        return wx.cloud.callFunction({ name: '${cloudName}', ${dataText} }).then(res => res.result as any)
       }
     `).join('\n\n')}
 

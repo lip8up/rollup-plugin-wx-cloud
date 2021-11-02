@@ -2,12 +2,16 @@
   "name": "rollup-plugin-wx-cloud",
   "version": "1.0.0",
   "description": "TypeScript 函数转微信小程序云函数",
-  "main": "dist/plugin.js",
-  "module": "dist/plugin.mjs",
-  "types": "dist/plugin.d.ts",
   "license": "MIT",
   "repository": "git@github.com:lip8up/rollup-plugin-wx-cloud.git",
   "author": "lip8up <lip8up@qq.com>",
+  "main": "dist/plugin.js",
+  "module": "dist/plugin.mjs",
+  "types": "dist/plugin.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "yarn clean && rollup -c && :",
@@ -21,7 +25,7 @@
   "dependencies": {
     "common-tags": "^1.8.0",
     "lodash": "^4.17.21",
-    "typescript-transform-wx-cloud": "^2.8.8"
+    "typescript-transform-wx-cloud": "^4.6.6"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.6",
@@ -53,8 +57,7 @@
   "lint-staged": {
     "src/*.ts": [
       "yarn testless tests",
-      "yarn build",
-      "git add dist"
+      "yarn build"
     ]
   }
 }

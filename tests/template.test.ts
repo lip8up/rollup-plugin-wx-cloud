@@ -17,11 +17,12 @@ test('objectLiteral', () => {
 test('clientTemplate', () => {
   expect(
     clientTemplate(
-      '',
+      'airead',
       [
-        { name: 'getOpenId', params: [] },
-        { name: 'format', params: ['object'] },
-        { name: 'sum', params: ['a', 'b'] },
+        { name: 'getOpenId', params: [], isMain: false },
+        { name: 'format', params: ['object'], isMain: false },
+        { name: 'sum', params: ['a', 'b'], isMain: false },
+        { name: 'wxContext', params: ['data'], isMain: true },
       ]
     )
   )
@@ -30,27 +31,33 @@ test('clientTemplate', () => {
     import type functionGetOpenId from '@cloud/functions/getOpenId'
     import type functionFormat from '@cloud/functions/format'
     import type functionSum from '@cloud/functions/sum'
+    import type { main as functionWxContext } from '@cloud/functions/wxContext'
 
     type PromiseType<T> = T extends Promise<infer _> ? T : Promise<T>
 
     type PromiseReturnType<T extends (...args: any) => any> = (...args: Parameters<T>) => PromiseType<ReturnType<T>>
 
     export const cloudGetOpenId: PromiseReturnType<typeof functionGetOpenId> = () => {
-      return wx.cloud.callFunction({ name: 'getOpenId', data: {} }).then(res => res.result as any)
+      return wx.cloud.callFunction({ name: 'aireadGetOpenId', data: {} }).then(res => res.result as any)
     }
 
     export const cloudFormat: PromiseReturnType<typeof functionFormat> = object => {
-      return wx.cloud.callFunction({ name: 'format', data: { object } }).then(res => res.result as any)
+      return wx.cloud.callFunction({ name: 'aireadFormat', data: { object } }).then(res => res.result as any)
     }
 
     export const cloudSum: PromiseReturnType<typeof functionSum> = (a, b) => {
-      return wx.cloud.callFunction({ name: 'sum', data: { a, b } }).then(res => res.result as any)
+      return wx.cloud.callFunction({ name: 'aireadSum', data: { a, b } }).then(res => res.result as any)
+    }
+
+    export const cloudWxContext: PromiseReturnType<typeof functionWxContext> = data => {
+      return wx.cloud.callFunction({ name: 'aireadWxContext', data }).then(res => res.result as any)
     }
 
     export default {
       getOpenId: cloudGetOpenId,
       format: cloudFormat,
-      sum: cloudSum
+      sum: cloudSum,
+      wxContext: cloudWxContext
     }
   `.trim())
 })

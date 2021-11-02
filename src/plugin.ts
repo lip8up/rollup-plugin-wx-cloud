@@ -48,10 +48,10 @@ export function createTransformerAndPlugin(options?: WxCloudOptions) {
 
   const wxCloudTransformer = makeTransformerFactory({
     ...transformerOptions,
-    wxCloudEmitParams(fileName, params) {
+    wxCloudEmitParams(fileName, params, isMain) {
       // watch 模式下，有可能重复添加
       const name = functionName(fileName)
-      const newItem = { name, params }
+      const newItem = { name, params, isMain }
       const index = functionList.findIndex(({ name }) => name == newItem.name)
       functionList.splice(index >= 0 ? index : functionList.length, 1, newItem)
     }
