@@ -49,7 +49,7 @@ test('clientTemplate', () => {
       return wx.cloud.callFunction({ name: 'aireadSum', data: { a, b } }).then(res => res.result as any)
     }
 
-    export const cloudWxContext: PromiseReturnType<typeof functionWxContext> = data => {
+    export const cloudWxContext = (data?: any): PromiseType<ReturnType<typeof functionWxContext>> => {
       return wx.cloud.callFunction({ name: 'aireadWxContext', data }).then(res => res.result as any)
     }
 

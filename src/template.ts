@@ -69,8 +69,11 @@ export const clientTemplate: ClientTemplate = (prefix, functions) => {
 
     type PromiseReturnType<T extends (...args: any) => any> = (...args: Parameters<T>) => PromiseType<ReturnType<T>>
 
-    ${fns.map(({ Name, cloudName, functionName, paramsText, dataText }) => source`
-      export const cloud${Name}: PromiseReturnType<typeof ${functionName}> = ${paramsText} => {
+    ${fns.map(({ Name, cloudName, functionName, paramsText, dataText, isMain }) => source`
+      ${isMain
+        ? `export const cloud${Name} = (data?: any): PromiseType<ReturnType<typeof ${functionName}>> => {`
+        : `export const cloud${Name}: PromiseReturnType<typeof ${functionName}> = ${paramsText} => {`
+      }
         return wx.cloud.callFunction({ name: '${cloudName}', ${dataText} }).then(res => res.result as any)
       }
     `).join('\n\n')}
