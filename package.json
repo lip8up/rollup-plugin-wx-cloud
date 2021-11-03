@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "common-tags": "^1.8.0",
+    "deep-extend": "^0.6.0",
     "lodash": "^4.17.21",
     "typescript-transform-wx-cloud": "^4.6.6"
   },
@@ -31,6 +32,7 @@
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-typescript": "^8.3.0",
     "@types/common-tags": "^1.8.1",
+    "@types/deep-extend": "^0.4.32",
     "@types/jest": "^27.0.2",
     "@types/lodash": "^4.14.176",
     "@types/node": "^16.11.6",
