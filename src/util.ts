@@ -25,16 +25,6 @@ export function cloudName(prefix: string, name: string) {
 }
 
 /**
- * 是否能写文件路径所在的文件夹。
- *
- * @param fpath 文件路径
- */
-export async function accessDir(fpath: string) {
-  const dir = dirname(fpath)
-  await access(dir, constants.W_OK)
-}
-
-/**
  * 解析 json，不抛出异常，若发生异常，返回 defaultValue。
  *
  * @param json json 字符串

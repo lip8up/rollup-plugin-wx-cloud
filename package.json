@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-wx-cloud",
-  "version": "1.6.6",
+  "version": "1.8.8",
   "description": "TypeScript 函数转微信小程序云函数",
   "license": "MIT",
   "repository": "git@github.com:lip8up/rollup-plugin-wx-cloud.git",

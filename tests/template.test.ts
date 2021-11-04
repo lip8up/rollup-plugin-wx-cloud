@@ -1,5 +1,5 @@
 import { source } from 'common-tags'
-import { paramsLiteral, objectLiteral, clientTemplate } from '@/template'
+import { paramsLiteral, objectLiteral, clientTemplate, packageTemplate } from '@/template'
 
 test('paramsLiteral', () => {
   expect(paramsLiteral([])).toEqual('()')
@@ -58,6 +58,51 @@ test('clientTemplate', () => {
       format: cloudFormat,
       sum: cloudSum,
       wxContext: cloudWxContext
+    }
+  `.trim())
+})
+
+test('packageTemplate', () => {
+  expect(
+    packageTemplate({
+      name: 'myCloudName',
+      version: '6.6.6',
+      description: 'This is a cloud name',
+      author: 'lip8up',
+      license: 'HAHA',
+      dependencies: [
+        { name: 'some', version: '^v1.0.0' },
+        { name: 'other', version: '^v1.6.6' },
+      ]
+    })
+  )
+  .toEqual(source`
+    {
+      "name": "my-cloud-name",
+      "version": "6.6.6",
+      "description": "This is a cloud name",
+      "author": "lip8up",
+      "license": "HAHA",
+      "dependencies": {
+        "some": "^v1.0.0",
+        "other": "^v1.6.6"
+      }
+    }
+  `.trim())
+
+  expect(
+    packageTemplate({
+      name: 'myCloudName'
+    })
+  )
+  .toEqual(source`
+    {
+      "name": "my-cloud-name",
+      "version": "0.0.1",
+      "description": "",
+      "author": "",
+      "license": "MIT",
+      "dependencies": {}
     }
   `.trim())
 })

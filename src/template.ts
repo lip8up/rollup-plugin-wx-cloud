@@ -120,21 +120,14 @@ export type PackageTemplate = (pkg: Partial<Package>) => string
  * @param pkg 配置
  */
 export const packageTemplate: PackageTemplate = pkg => {
-  // 使用模板，而非 JSON.stringify，是为了保证顺序
-  // prettier-ignore
-  const text = source`
-    {
-      "name": "${kebabCase(pkg.name)}",
-      "version": "${pkg.version || '0.0.1'}",
-      "description": "${pkg.description || ''}",
-      "author": "${pkg.author || ''}",
-      "license": "${pkg.license || 'MIT'}",
-      "dependencies": {
-        ${(pkg.dependencies || []).map(({ name, version }) => source`
-          "${name}": "${version}"
-        `).join(',\n')}
-      }
-    }
-  `
+  const dependencies = (pkg.dependencies || []).reduce((ret, { name, version }) => ({ ...ret, [name]: version }), {})
+  const text = JSON.stringify({
+    name: kebabCase(pkg.name),
+    version: pkg.version || '0.0.1',
+    description: pkg.description || '',
+    author: pkg.author || '',
+    license: pkg.license || 'MIT',
+    dependencies
+  }, null, 2)
   return text
 }
