@@ -1,15 +1,16 @@
-import type { Plugin, OutputBundle, OutputAsset, OutputChunk } from 'rollup'
-import { makeTransformerFactory, TransformerOptions } from 'typescript-transform-wx-cloud'
-import extend from 'deep-extend'
+import type { Plugin } from 'rollup'
+import TransformerFactory, { TransformerOptions } from 'typescript-transform-wx-cloud'
 import { join } from 'path'
-import { writeFile } from 'fs/promises'
-import { debounce } from 'lodash'
-import { clientTemplate, packageTemplate, dontEditText, Function, Package } from './template'
-import { functionName, cloudName as cloudNameUtil, loadJsonFile } from './util'
+import { dontEditText, PackageOptions } from './template'
+import { cloudName } from './util'
+import FunctionStore, { functionName } from './FunctionStore'
+import Bundle from './Bundle'
 import type { Dictionary } from './types'
+import metaFile from './metaFile'
 
 /**
  * 触发器配置。
+ *
  * https://cloud.tencent.com/document/product/1209/42674
  */
 export interface CloudFunctionTrigger {
@@ -36,6 +37,7 @@ export interface VPC {
 
 /**
  * 微信云函数部署配置。
+ *
  * https://cloud.tencent.com/document/product/1209/42674
  */
 export interface WxCloudDeploy {
@@ -75,7 +77,7 @@ export interface WxCloudOptions {
   prefix?: string
 
   /** 生成 package.json 的配置 */
-  packageOptions?: Partial<Omit<Package, 'name' | 'dependencies'>>
+  packageOptions?: PackageOptions
 
   /** 全部依赖 */
   allDependencies: Dictionary<string>
@@ -96,121 +98,46 @@ export interface WxCloudOptions {
   transformerOptions?: Omit<TransformerOptions, 'wxCloudEmitParams'>
 }
 
-const isEntryChunk = (bundle: OutputAsset | OutputChunk): bundle is OutputChunk => {
-  return bundle.type == 'chunk' && bundle.isEntry
-}
-
-const libDefaultDeploy = {
-  timeout: 6,
-  runtime: 'Nodejs12.16',
-  installDependency: true
-}
-
 export function createTransformerAndPlugin(options?: WxCloudOptions) {
   const {
     prefix = '',
     packageOptions = {},
     allDependencies = {},
-    clientFilePath,
-    configFilePath,
-    defaultDeploy = {},
-    functionDeploy = {},
     transformerOptions
   } = { ...options }
 
-  const cloudName = (name: string) => cloudNameUtil(prefix, name)
+  const functionStore = new FunctionStore()
+  const bundle = new Bundle(prefix, functionStore, allDependencies)
+  const createMetaOnce = metaFile(functionStore, options)
 
-  const functionList: Function[] = []
-
-  const getFunction = (fpath: string) => {
-    const funcName = functionName(fpath)
-    return functionList.find(({ name }) => name == funcName)
-  }
-
-  const wxCloudTransformer = makeTransformerFactory({
-    ...transformerOptions,
-    wxCloudEmitParams(fileName, params, isMain) {
-      // watch 模式下，有可能重复添加
-      const name = functionName(fileName)
-      const newItem = { name, params, isMain }
-      const index = functionList.findIndex(({ name }) => name == newItem.name)
-      functionList.splice(index >= 0 ? index : functionList.length, 1, newItem)
-    }
+  const factory = new TransformerFactory({ ...transformerOptions })
+  factory.on('entry', ({ filePath, params, isMain }) => {
+    // watch 模式下，有可能重复添加
+    /* istanbul ignore next */
+    functionStore.addOrUpdate(filePath, params, isMain)
   })
-
-  const resolveChunk = async(bundle: OutputBundle) => {
-    const chunks = Object.values(bundle).filter(isEntryChunk)
-    for (const chunk of chunks) {
-      const fpath = chunk.facadeModuleId?.trim()
-      const func = await getFunction(fpath || '')
-      if (func != null) {
-        return {
-          name: func.name,
-          imports: chunk.imports
-        }
-      }
-    }
-  }
-
-  const resolveDependencies = (imports: string[]) => {
-    return imports.filter(name => name in allDependencies)
-      .map(name => ({ name, version: allDependencies[name] }))
-  }
-
-  const createClientFile = async () => {
-    if (clientFilePath) {
-      const source = clientTemplate(prefix, functionList)
-      await writeFile(clientFilePath, source)
-    }
-  }
-
-  const updateFunctionConfig = async () => {
-    if (configFilePath) {
-      const config = await loadJsonFile<Dictionary>(configFilePath, {})
-      const functions = functionList.map(({ name }) =>
-        extend({ name }, libDefaultDeploy, defaultDeploy, functionDeploy[name])
-      )
-      config.functions = functions
-      const json = JSON.stringify(config, null, 2)
-      await writeFile(configFilePath, json)
-    }
-  }
-
-  const createFile = async () => {
-    await Promise.all([ createClientFile(), updateFunctionConfig() ])
-  }
-
-  const createFileOnce = debounce(createFile, 666, { leading: true, trailing: false })
 
   const wxCloudPlugin: Plugin = {
     name: 'wx-cloud',
+    /* istanbul ignore next */
     outputOptions(options) {
       if (options.intro == null) {
         options.intro = dontEditText
       }
       return null
     },
-    async generateBundle(_, bundle) {
-      const item = await resolveChunk(bundle)
-      if (item != null) {
-        const { name, imports } = item
-        const dependencies = resolveDependencies(imports)
-        const source = packageTemplate({
-          ...packageOptions,
-          name: cloudName(name),
-          dependencies
-        })
-        this.emitFile({ type: 'asset', fileName: 'package.json', source })
-      }
-
-      await createFileOnce()
+    /* istanbul ignore next */
+    async generateBundle(_, outputBundle) {
+      const source = bundle.generatePackage(outputBundle, packageOptions)
+      source && this.emitFile({ type: 'asset', fileName: 'package.json', source })
+      await createMetaOnce()
     }
   }
 
   const outputDirectory = (baseDir: string, fpath: string) => {
     const name = functionName(fpath)
-    return join(baseDir, cloudName(name))
+    return join(baseDir, cloudName(prefix, name))
   }
 
-  return { wxCloudTransformer, wxCloudPlugin, outputDirectory }
+  return { wxCloudTransformer: factory.transformer, wxCloudPlugin, outputDirectory }
 }

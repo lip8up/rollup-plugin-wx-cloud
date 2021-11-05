@@ -1,9 +1,4 @@
-import { functionName, cloudName, tryParseJson, loadJsonFile } from '@/util'
-
-test('functionName', () => {
-  expect(functionName('some/path/name.ts')).toEqual('name')
-  expect(functionName('some/path/name/index.ts')).toEqual('name')
-})
+import { cloudName, tryParseJson, loadJsonFile } from '@/util'
 
 test('cloudName', () => {
   expect(cloudName('', 'name')).toEqual('name')
@@ -20,6 +15,8 @@ test('loadJsonFile', async () => {
   expect(pkg?.name).toEqual('rollup-plugin-wx-cloud')
   const lib = await loadJsonFile('README.md', { name: 666 })
   expect(lib?.name).toEqual(666)
+  const fileNotExists = await loadJsonFile('xxxREADME.mdxxx', { name: 888 })
+  expect(fileNotExists?.name).toEqual(888)
 })
 
 

@@ -3091,6 +3091,11 @@ type-fest@^0.21.3:
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.21.3.tgz#d260a24b0198436e133fa26a524a6d65fa3b2e37"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
 
+typed-events.ts@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.npmmirror.com/typed-events.ts/download/typed-events.ts-0.0.0.tgz#36bcbf2cb7cd0f9700f91a67b490f6154d23c874"
+  integrity sha1-Nry/LLfND5cA+RpntJD2FU0jyHQ=
+
 typedarray-to-buffer@^3.1.5:
   version "3.1.5"
   resolved "https://registry.npmjs.org/typedarray-to-buffer/-/typedarray-to-buffer-3.1.5.tgz#a97ee7a9ff42691b9f783ff1bc5112fe3fca9080"
@@ -3098,12 +3103,13 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript-transform-wx-cloud@^4.6.6:
-  version "4.6.6"
-  resolved "https://registry.npmjs.org/typescript-transform-wx-cloud/-/typescript-transform-wx-cloud-4.6.6.tgz#31e19c8a7df30d277fdc15d05b9ed603339ae6d0"
-  integrity sha512-2S1BeZPjIGMmh/pIKS+ehoCkv3zbtbZ7gKNPNGPz+JWeMkgnMcsjGA+RnCBGmukTwOvES5chjYeuqk51wRJ2lA==
+typescript-transform-wx-cloud@^4.9.9:
+  version "4.9.9"
+  resolved "https://registry.npmmirror.com/typescript-transform-wx-cloud/download/typescript-transform-wx-cloud-4.9.9.tgz?cache=0&sync_timestamp=1636133263178&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Ftypescript-transform-wx-cloud%2Fdownload%2Ftypescript-transform-wx-cloud-4.9.9.tgz#1d640fff4b18df2b384a6a57afd6a659f489b8e0"
+  integrity sha1-HWQP/0sY3ys4SmpXr9amWfSJuOA=
   dependencies:
     common-tags "^1.8.0"
+    typed-events.ts "^0.0.0"
 
 typescript@^4.4.4:
   version "4.4.4"

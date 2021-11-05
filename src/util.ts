@@ -1,18 +1,6 @@
-import { parse, basename, dirname } from 'path'
-import { constants } from 'fs'
-import { access, readFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import { upperFirst } from 'lodash'
 import type { Dictionary } from './types'
-
-/**
- * 根据路径，获取函数名。
- *
- * @param fpath 路径
- */
-export function functionName(fpath: string) {
-  const { name, dir } = parse(fpath)
-  return name == 'index' ? basename(dir) : name
-}
 
 /**
  * 获取云函数名。
@@ -49,6 +37,10 @@ export function tryParseJson<T = Dictionary>(json: string, defaultValue?: T) {
 export async function loadJsonFile<T = Dictionary>(fpath: string): Promise<T | undefined>
 export async function loadJsonFile<T = Dictionary>(fpath: string, defaultValue: T): Promise<T>
 export async function loadJsonFile<T = Dictionary>(fpath: string, defaultValue?: T) {
-  const text = await readFile(fpath, 'utf8')
-  return tryParseJson<T>(text, defaultValue!)
+  try {
+    const text = await readFile(fpath, 'utf8')
+    return tryParseJson<T>(text, defaultValue!)
+  } catch {
+    return defaultValue
+  }
 }
