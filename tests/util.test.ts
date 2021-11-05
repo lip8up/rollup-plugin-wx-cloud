@@ -18,5 +18,3 @@ test('loadJsonFile', async () => {
   const fileNotExists = await loadJsonFile('xxxREADME.mdxxx', { name: 888 })
   expect(fileNotExists?.name).toEqual(888)
 })
-
-
